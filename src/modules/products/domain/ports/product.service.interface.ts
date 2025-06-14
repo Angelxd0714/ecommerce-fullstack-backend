@@ -2,8 +2,6 @@ import { Product } from "../entities/product.entity";
 
 export interface ProductServiceInterface {
     findAll(): Promise<Product[]>;
-    findById(id: number): Promise<Product | null>;
-    create(product: Product): Promise<Product>;
-    update(id: number, product: Product): Promise<Product>;
-    delete(id: number): Promise<void>;
+    findById(id: string): Promise<Product | null>;
+    reduceStock(id: string, quantity: number): Promise<void>;
 }

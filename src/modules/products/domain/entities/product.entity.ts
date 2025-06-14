@@ -24,6 +24,8 @@ export class Product {
     @Column("varchar", { length: 255 })
     category: string;
 
+  
+
     @Column("timestamp", { default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;
 

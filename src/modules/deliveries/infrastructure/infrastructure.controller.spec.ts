@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InfrastructureController } from './infrastructure.controller';
+import { InfrastructureController } from './controllers/deliver.controller';
 
 describe('InfrastructureController', () => {
   let controller: InfrastructureController;

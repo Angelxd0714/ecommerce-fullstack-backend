@@ -1,35 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ProductServiceInterface } from '../domain/ports/product.service.interface';
-import { ProductRepository } from '../domain/ports/product.repository';
 import { Product } from '../domain/entities/product.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { ProductRepositoryPort } from '../domain/ports/product.repository';
 
 @Injectable()
 export class ProductService implements ProductServiceInterface {
   constructor(
-    @InjectRepository(Product)
-    private readonly productRepository: ProductRepository,
+    @Inject('ProductRepositoryPort')
+    private readonly productRepository: ProductRepositoryPort,
   ) {}
-  reduceStock(id: number, quantity: number) {
+  async reduceStock(id: string, quantity: number): Promise<void> {
+    const product = await this.findById(id);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    if (product.stock < quantity) {
+      throw new Error('Not enough stock');
+    }
+    product.stock -= quantity;
     return this.productRepository.reduceStock(id, quantity);
   }
-  findAll(): Promise<Product[]> {
-    return this.productRepository.findAll();
+  async findAll(): Promise<Product[]> {
+    const products = await this.productRepository.findAll();
+    if (!products) {
+      throw new Error('Products not found');
+    }
+    return products;
   }
 
-  findById(id: number): Promise<Product | null> {
-    return this.productRepository.findById(id);
-  }
-
-  create(product: Product): Promise<Product> {
-    return this.productRepository.create(product);
-  }
-
-  update(id: number, product: Product): Promise<Product> {
-    return this.productRepository.update(id, product);
-  }
-
-  delete(id: number): Promise<void> {
-    return this.productRepository.delete(id);
+  async findById(id: string): Promise<Product | null> {
+    const product = await this.productRepository.findById(id);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    return product;
   }
 }
