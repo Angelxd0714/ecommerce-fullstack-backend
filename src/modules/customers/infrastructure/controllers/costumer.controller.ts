@@ -4,7 +4,7 @@ import { CreateCostumerDto } from '../../application/dto/create-costumer';
 import { ResponseCostumerDto } from '../../application/dto/reponse-costumer';
 import { Costumer } from '../../domain/entities/costumers';
 
-@Controller('customers')
+@Controller('customers/')
 export class InfrastructureController {
     constructor(
         private readonly costumerService: CostumerService,
