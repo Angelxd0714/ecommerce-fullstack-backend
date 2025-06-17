@@ -6,4 +6,5 @@ export interface CostumerRepositoryPort {
     create(costumer: Costumer): Promise<Costumer>;
     update(id: string, costumer: Costumer): Promise<Costumer>;
     delete(id: string): Promise<void>;
+    findByIdentity(identity: number): Promise<Costumer | null>;
 }

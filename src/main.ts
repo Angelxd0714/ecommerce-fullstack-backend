@@ -15,6 +15,13 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
+   // Configuración CORS más estricta
+   app.enableCors({
+    origin: 'http://localhost:5173', // Especifica exactamente tu origen frontend
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
+    credentials: true,
+  });
   await app.listen(process.env.PORT ?? 3000);
   const dataSource = app.get(DataSource);
   const s3Service = app.get(AwsS3Service);

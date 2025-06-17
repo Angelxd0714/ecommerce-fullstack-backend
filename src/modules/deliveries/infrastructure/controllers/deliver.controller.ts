@@ -11,11 +11,33 @@ export class InfrastructureController {
     ) {}
     @Get()
     async findAll(): Promise<ResponseDelivery[]> {
-        return this.deliveryService.findAll();
+        return this.deliveryService.findAll().then(deliveries => {
+            return deliveries.map(delivery => ({
+                id: delivery.id,
+                transactionId: delivery.transactionId,
+                address: delivery.address,
+                city: delivery.city,
+                postalCode: delivery.postalCode,
+                delivered: delivery.delivered,
+                createdAt: delivery.createdAt,
+                updatedAt: delivery.updatedAt
+            }));
+        });
     }
     @Get(':id')
     async findById(@Param('id') id: string): Promise<ResponseDelivery | null> {
-        return this.deliveryService.findById(id);
+        return this.deliveryService.findById(id).then(delivery => {
+            return {
+                id: delivery.id,
+                transactionId: delivery.transactionId,
+                address: delivery.address,
+                city: delivery.city,
+                postalCode: delivery.postalCode,
+                delivered: delivery.delivered,
+                createdAt: delivery.createdAt,
+                updatedAt: delivery.updatedAt
+            };
+        });
     }
     @Post()
     async create(@Body() delivery: CreateDelivery): Promise<ResponseDelivery> {
@@ -26,7 +48,18 @@ export class InfrastructureController {
         newDelivery.postalCode = delivery.postalCode;
         newDelivery.delivered = delivery.delivered;
         newDelivery.createdAt = new Date();
-        return this.deliveryService.create(newDelivery);
+        return this.deliveryService.create(newDelivery).then(delivery => {
+            return {
+                id: delivery.id,
+                transactionId: delivery.transactionId,
+                address: delivery.address,
+                city: delivery.city,
+                postalCode: delivery.postalCode,
+                delivered: delivery.delivered,
+                createdAt: delivery.createdAt,
+                updatedAt: delivery.updatedAt
+            };
+        });
     }
     @Put(':id')
     async update(@Param('id') id: string, @Body() delivery: CreateDelivery): Promise<ResponseDelivery> {
@@ -37,10 +70,23 @@ export class InfrastructureController {
         updatedDelivery.postalCode = delivery.postalCode;
         updatedDelivery.delivered = delivery.delivered;
         updatedDelivery.updatedAt = new Date();
-        return this.deliveryService.update(id, updatedDelivery);
+        return this.deliveryService.update(id, updatedDelivery).then(delivery => {
+            return {
+                id: delivery.id,
+                transactionId: delivery.transactionId,
+                address: delivery.address,
+                city: delivery.city,
+                postalCode: delivery.postalCode,
+                delivered: delivery.delivered,
+                createdAt: delivery.createdAt,
+                updatedAt: delivery.updatedAt
+            };
+        });
     }
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<void> {
-        return this.deliveryService.delete(id);
+        return this.deliveryService.delete(id).then(() => {
+            return;
+        });
     }   
 }

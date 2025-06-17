@@ -7,10 +7,13 @@ import { Costumer } from './domain/entities/costumers';
 @Module({
   imports: [TypeOrmModule.forFeature([Costumer])],
   controllers: [InfrastructureController],
-  providers: [CostumerService, {
-    provide: 'CostumerRepositoryPort',
-    useClass: CostumerRepositoryImpl,
-  }],
+  providers: [
+     CostumerService ,
+    {
+      provide: 'CostumerRepositoryPort',
+      useClass: CostumerRepositoryImpl,
+    },
+  ],
   exports: [CostumerService],
 })
-export class CustomersModule {}
+export class CostumerModule {}

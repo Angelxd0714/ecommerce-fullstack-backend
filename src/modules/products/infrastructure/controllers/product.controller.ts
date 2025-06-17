@@ -19,10 +19,5 @@ export class InfrastructureController {
     const product = await this.productService.findById(id);
     return new ProductResponseDto(product);
   }
-  @Patch(':id/reduce-stock')
-  async updateStock(@Param('id') id: string, @Body() body: UpdateStockDto) {
-    const product = await this.productService.reduceStock(id, body.quantity);
-    
-    return product;
-  }
+  
 }
