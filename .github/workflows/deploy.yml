@@ -37,7 +37,6 @@ jobs:
     - name: SSH into EC2 and run container
       run: |
         ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-         
           sudo systemctl enable docker
           sudo docker stop app || true
           sudo docker rm app || true
