@@ -76,7 +76,10 @@ export class WompiService {
     try {
       const response = await firstValueFrom(
         this.http.post(url, payload, {
-          headers: this.getAuthHeaders(true),
+          headers: {
+            'Authorization': `Bearer ${this.privateKey}`,
+            'Content-Type': 'application/json',
+          },
         })
       );
 
