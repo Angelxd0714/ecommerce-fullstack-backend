@@ -17,6 +17,4 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
       rejectUnauthorized: false,
     },
   },
-  
-  
 };
