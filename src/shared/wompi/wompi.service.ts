@@ -27,37 +27,7 @@ export class WompiService {
     };
   }
 
-  async createCardToken(card: CreateCardDto): Promise<string> {
-    this.validateEnvironment();
-    const url = `${this.baseUrl}/tokens/cards`;
-
-    this.logger.log(`Creando token de tarjeta para: ${card.card_holder}`);
-    
-    const payload = {
-      number: card.number,
-      exp_month: card.exp_month,
-      exp_year: card.exp_year,
-      cvc: card.cvc,
-      card_holder: card.card_holder,
-    };
-
-    try {
-      const response = await firstValueFrom(
-        this.http.post(url, payload, { 
-          headers: this.getAuthHeaders(false) 
-        })
-      );
-
-      if (!response.data.data?.id) {
-        throw new Error('Respuesta de Wompi no contiene token de tarjeta');
-      }
-
-      return response.data.data.id;
-    } catch (error) {
-      this.logger.error('Error creando token de tarjeta', error.response?.data || error.message);
-      throw this.parseWompiError(error);
-    }
-  }
+  
 
   async createTransaction({
     amountInCents,
