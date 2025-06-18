@@ -1,17 +1,19 @@
-
 services:
-  postgres:
-    image: postgres:17
-    restart: always
-    environment:
-      POSTGRES_USER: ${AWS_DB_USERNAME}
-      POSTGRES_PASSWORD: ${AWS_DB_PASSWORD}
-      POSTGRES_DB: ${AWS_DB_NAME}
+  app:
+    build:
+      context: .
     ports:
-      - "5444:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-
-volumes:
-  pg_data:
-
+      - "3000:3000"
+    env_file:
+      - .env.production
+ # postgres:  👈 ELIMINAR O COMENTAR EN PRODUCCIÓN
+  #   image: postgres:17
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: ${AWS_DB_USERNAME}
+  #     POSTGRES_PASSWORD: ${AWS_DB_PASSWORD}
+  #     POSTGRES_DB: ${AWS_DB_NAME}
+  #   ports:
+  #     - "5444:5432"
+  #   volumes:
+  #     - pg_data:/var/lib/postgresql/data"
