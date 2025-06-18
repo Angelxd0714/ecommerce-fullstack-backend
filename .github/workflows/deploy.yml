@@ -37,10 +37,12 @@ jobs:
     - name: SSH into EC2 and run container
       run: |
         ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          docker stop app || true
-          docker rm app || true
-          docker pull $ECR_REPO:latest
-          docker run -d --name app \
+         
+          sudo systemctl enable docker
+          sudo docker stop app || true
+          sudo docker rm app || true
+          sudo docker pull $ECR_REPO:latest
+          sudo docker run -d --name app \
             -p 3000:3000 \
             --env-file /home/ec2-user/app-backend/.env.production \
             $ECR_REPO:latest
