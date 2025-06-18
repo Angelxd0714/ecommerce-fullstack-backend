@@ -10,7 +10,13 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   database: process.env.AWS_DB_NAME,
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   autoLoadEntities: true,
-  synchronize: true, // ⚠️ crea tablas automáticamente
+  synchronize: false, 
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
   
   
 };
