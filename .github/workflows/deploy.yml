@@ -37,20 +37,33 @@ jobs:
     - name: SSH into EC2 and deploy container
       run: |
         ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          # Iniciar sesión en ECR
+          aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+
+          # Guardar archivo de entorno
           echo "${ENV_PRODUCTION}" > /home/ec2-user/.env.temp
+
+          # Eliminar contenedor antiguo si existe
           sudo docker stop app || true
           sudo docker rm app || true
+
+          # Pull de imagen desde ECR
           sudo docker pull $ECR_REPO:latest
+
+          # Ejecutar nuevo contenedor
           sudo docker run -d --name app \
             --env-file /home/ec2-user/.env.temp \
             -p 3000:3000 \
             $ECR_REPO:latest
+
+          # Eliminar archivo temporal
+          rm /home/ec2-user/.env.temp
         EOF
       env:
-        ECR_REPO: ${{ secrets.ECR_REPO }}
+        ECR_REPO: ${{ secrets.ECR_REPO }}         # Ej: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ecommerce-backend
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }} # Ej: 123456789012.dkr.ecr.us-east-1.amazonaws.com
         ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
         EC2_USER: ${{ secrets.EC2_USER }}
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_KEY: ${{ secrets.EC2_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        
