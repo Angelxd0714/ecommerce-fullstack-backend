@@ -1,5 +1,5 @@
-# Etapa 1: Build
-FROM node:20-alpine AS builder
+# Etapa 1: build con Nest CLI
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 
-# Etapa 2: Producción
+# Etapa 2: solo lo necesario para correr
 FROM node:20-alpine
 
 WORKDIR /app
