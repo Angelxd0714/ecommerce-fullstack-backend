@@ -165,13 +165,7 @@ export class TransactionService implements TransactionServiceInterface {
       return transaction;
     });
   }
-  async createCardToken(card: CreateCardDto): Promise<string> {
-    try {
-      return this.wompiService.createCardToken(card);
-    } catch (error) {
-      throw error;
-    }
-  }
+ 
   async webHook(dto: WebHookDto): Promise<void> {
     const transactionFromWompi = await this.wompiService.getTransactionById(
       dto.wompiTransactionId,
