@@ -20,7 +20,7 @@ async function bootstrap() {
    app.enableCors({
     origin: 'http://localhost:5173', // Especifica exactamente tu origen frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type,Authorization',
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
   app.useGlobalFilters(new GlobalExceptionFilter());
