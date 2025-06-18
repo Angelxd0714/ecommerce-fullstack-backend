@@ -60,8 +60,8 @@ jobs:
           rm /home/ec2-user/.env.temp
         EOF
       env:
-        ECR_REPO: ${{ secrets.ECR_REPO }}         # Ej: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ecommerce-backend
-        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }} # Ej: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+        ECR_REPO: ${{ secrets.ECR_REPO }}        
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }} 
         ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
         EC2_USER: ${{ secrets.EC2_USER }}
