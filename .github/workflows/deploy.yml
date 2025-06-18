@@ -9,43 +9,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Log in to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build and push Docker image
-      run: |
-        docker build -t $ECR_REPO:latest .
-        docker push $ECR_REPO:latest
-      env:
-        ECR_REPO: ${{ secrets.ECR_REPO }}
+      - name: Build and push Docker image
+        run: |
+          docker build -t $ECR_REPO:latest .
+          docker push $ECR_REPO:latest
+        env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
 
-    - name: Create PEM file
-      run: |
-        echo "${{ secrets.EC2_KEY }}" > key.pem
-        chmod 600 key.pem
+      - name: Create PEM file
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > key.pem
+          chmod 600 key.pem
 
-    - name: SSH into EC2 and run container
-      run: |
-        ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          sudo docker stop app || true
-          sudo docker rm app || true
-          sudo docker pull $ECR_REPO:latest
-          sudo docker run -d --name app \
-        -p 3000:3000 \
-        --env-file .env.temp \
-        $ECR_REPO:latest
-        rm .env.temp
-        EOF
-      env:
-        EC2_USER: ${{ secrets.ENV_PRODUCTION }}
-        ECR_REPO: ${{ secrets.ECR_REPO }}
+      - name: SSH into EC2 and run container
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            echo "${{ secrets.ENV_PRODUCTION }}" > .env.temp
+            sudo docker stop app || true
+            sudo docker rm app || true
+            sudo docker pull $ECR_REPO:latest
+            sudo docker run -d --name app \
+              -p 3000:3000 \
+              --env-file .env.temp \
+              $ECR_REPO:latest
+            rm .env.temp
+            EOF
+          env:
+            ECR_REPO: ${{ secrets.ECR_REPO }}
+            ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
