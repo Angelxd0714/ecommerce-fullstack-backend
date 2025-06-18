@@ -39,4 +39,11 @@ export class TransactionRepositoryImpl implements TransactionRepositoryPort {
         this.repo.delete(id);
         return;
     }
+    findOneBy(arg0: { wompiTransactionId: string; }): Promise<Transaction> {
+        const transaction = this.repo.findOneBy({ wompiTransactionId: arg0.wompiTransactionId });
+        if (!transaction) {
+            throw new Error('No transaction found');
+        }
+        return transaction;
+    }
 }

@@ -16,14 +16,24 @@ import { CostumerService } from '../../application/costumer.service';
 import { CreateCostumerDto } from '../../application/dto/create-costumer';
 import { ResponseCostumerDto } from '../../application/dto/reponse-costumer';
 import { Costumer } from '../../domain/entities/costumers';
-
+import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse } from '@nestjs/swagger';
 @Controller('customers')
+@ApiTags('Customers')
 export class InfrastructureController {
   constructor(private readonly costumerService: CostumerService) {}
   @Post('')
   @UsePipes(new ValidationPipe({ transform: true }))
   
   @HttpCode(201)
+  @ApiResponse({
+    status: 201,
+    description: 'Costumer created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid data',
+  })
   async createCostumer(
     @Body() costumer: CreateCostumerDto,
   ): Promise<ResponseCostumerDto> {
@@ -52,6 +62,14 @@ export class InfrastructureController {
   }
   @Get('')
   @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Costumers found successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No costumers found',
+  })
   async findAllCostumers(): Promise<ResponseCostumerDto[]> {
     const costumers = await this.costumerService.findAll();
     if (!costumers) {
@@ -69,6 +87,14 @@ export class InfrastructureController {
   }
   @Get('/:identity')
   @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Costumer found successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No costumer found',
+  })
   async findCostumerByIdentity(
     @Param('identity') identity: number,
   ): Promise<ResponseCostumerDto> {
@@ -89,6 +115,14 @@ export class InfrastructureController {
   @Patch('')
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Costumer updated successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No costumer found',
+  })
   async updateCostumer(
     @Param('identity') identity: number,
     @Body() costumer: CreateCostumerDto,
@@ -115,7 +149,14 @@ export class InfrastructureController {
   }
   @Delete('/:identity')
   @HttpCode(204)
-  
+  @ApiResponse({
+    status: 204,
+    description: 'Costumer deleted successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No costumer found',
+  })
   async deleteCostumer(@Param('identity') identity: number): Promise<{ message: string }> {
     try {
       await this.costumerService.delete(identity);

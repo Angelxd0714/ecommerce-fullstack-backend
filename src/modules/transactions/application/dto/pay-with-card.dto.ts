@@ -1,20 +1,23 @@
 import { CreateCostumerDto } from "src/modules/customers/application/dto/create-costumer";
 import { CreateDelivery } from "src/modules/deliveries/application/dto/create-delivery";
-import { IsNumber, IsNotEmpty } from "class-validator";
-import { CreateCardDto } from "./create-card";
+import {  IsNotEmpty } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PayWithCardDto {
+  @ApiProperty({description:"Lista de productos",example:"[{productId: '123', quantity: 1}]"})
   products: Array<{
     productId: string;
     quantity: number;
   }>;
-    @IsNotEmpty()
+    @ApiProperty({description:"Datos del cliente",example:"{identity: '123', name: 'John Doe', email: 'john.doe@example.com', phone: '1234567890'}"})
     customerIdentity: CreateCostumerDto ;
     installments?: number;
-    @IsNotEmpty()
+    @ApiProperty({description:"Token de la tarjeta",example:"123"})
     cardToken: string;
-    @IsNotEmpty()
+    @ApiProperty({description:"Token de aceptación",example:"123"})
     acceptanceToken: string;
+    @ApiProperty({description:"Datos de entrega",example:"{address: '123 Main St', city: 'Anytown', state: 'CA', zip: '12345'}"})
+    delivery: CreateDelivery;
     
    
     

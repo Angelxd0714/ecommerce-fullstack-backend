@@ -18,6 +18,8 @@ import { CreateCardDto } from './dto/create-card';
 import { DataSource } from 'typeorm';
 import { Product } from 'src/modules/products/domain/entities/product.entity';
 import { Costumer } from 'src/modules/customers/domain/entities/costumers';
+import { Delivery } from 'src/modules/deliveries/domain/entities/delivery';
+import { WebHookDto } from './dto/webHook';
 
 @Injectable()
 export class TransactionService implements TransactionServiceInterface {
@@ -26,13 +28,8 @@ export class TransactionService implements TransactionServiceInterface {
     private readonly transactionRepository: TransactionRepositoryPort,
     @Inject('WompiService')
     private readonly wompiService: WompiService,
-
-    private readonly productService: ProductService,
-
-    private readonly customerService: CostumerService,
-
     private readonly deliveryService: DeliveryService,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) {}
   async findAll(): Promise<Transaction[]> {
     const transactions = await this.transactionRepository.findAll();
@@ -70,43 +67,51 @@ export class TransactionService implements TransactionServiceInterface {
     }
     return this.transactionRepository.delete(id);
   }
-  
+
   async processPayment(dto: PayWithCardDto): Promise<Transaction> {
-   return await this.dataSource.transaction(async (manager) => {
-    console.log("dto",dto);
-    const products = await Promise.all(
-      dto.products.map(p => 
-        manager.findOne(Product, { 
-          where: { id: p.productId },
-          lock: { mode: "pessimistic_write" } // Bloqueo para evitar race conditions
-        })
-      )
-    );    
-    console.log("products",products);
-      // Validaciones de stock
-      const totalQuantity = dto.products.reduce((sum, p) => sum + p.quantity, 0);
-      console.log('totalQuantity',totalQuantity);
+    return await this.dataSource.transaction(async (manager) => {
+      console.log('dto', dto);
+      const products = await Promise.all(
+        dto.products.map((p) =>
+          manager.findOne(Product, {
+            where: { id: p.productId },
+            lock: { mode: 'pessimistic_write' }, 
+          }),
+        ),
+      );
+      console.log('products', products);
+      const totalQuantity = dto.products.reduce(
+        (sum, p) => sum + p.quantity,
+        0,
+      );
+      console.log('totalQuantity', totalQuantity);
       const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
-      console.log('totalStock',totalStock);
+      console.log('totalStock', totalStock);
       if (totalStock < totalQuantity) {
         throw new BadRequestException('Stock insufficient');
       }
-    
+
       const transaction = manager.create(Transaction, {
         id: uuid(),
         status: 'PENDING',
-       
-        amount: products.map(p => p.price).reduce((sum, p) => sum + p *dto.products.find(p => p.productId === p.productId)?.quantity, 0),
+
+        amount: products
+          .map((p) => p.price)
+          .reduce(
+            (sum, p) =>
+              sum +
+              p *
+                dto.products.find((p) => p.productId === p.productId)?.quantity,
+            0,
+          ),
         currency: 'COP',
       });
-    
+
       await manager.save(transaction);
-    
-      // Customer
+
       const customer = manager.create(Costumer, dto.customerIdentity);
       await manager.save(customer);
-    
-      // Wompi
+
       const reference = `order-${Date.now()}`;
       const wompiResponse = await this.wompiService.createTransaction({
         amountInCents: transaction.amount * 100,
@@ -118,41 +123,75 @@ export class TransactionService implements TransactionServiceInterface {
         installments: dto.installments,
         acceptanceToken: dto.acceptanceToken,
       });
-      if(wompiResponse.status == 422){
-        throw new InternalServerErrorException(wompiResponse.error.message);
+      if (!wompiResponse) {
+        throw new Error(
+          'Error al crear la transacción' + wompiResponse.error.message,
+        );
       }
-      
-    
+
       if (wompiResponse.status === 'PENDING') {
         transaction.status = 'APPROVED';
         transaction.reference = reference;
         transaction.customerId = customer.id;
         transaction.updatedAt = new Date();
         transaction.wompiTransactionId = wompiResponse.id;
-    
+
         await manager.save(transaction);
-    
-        // Reducir stock
+
         for (const p of dto.products) {
           if (products) {
-            products.forEach(product => {
+            products.forEach((product) => {
               product.stock -= p.quantity;
               manager.save(product);
             });
           }
         }
-    
-        // Crear delivery si quieres
+
+        const delivery = manager.create(Delivery, {
+          id: uuid(),
+          transactionId: transaction.id,
+          address: dto.delivery.address,
+          city: dto.delivery.city,
+          postalCode: dto.delivery.postalCode,
+          delivered: true,
+          createdAt: new Date(),
+        });
+        await manager.save(delivery);
       } else {
         transaction.status = 'DECLINED';
         await manager.save(transaction);
       }
-    
+
       return transaction;
     });
-    
   }
   async createCardToken(card: CreateCardDto): Promise<string> {
-    return this.wompiService.createCardToken(card);
+    try {
+      return this.wompiService.createCardToken(card);
+    } catch (error) {
+      throw error;
+    }
+  }
+  async webHook(dto: WebHookDto): Promise<void> {
+    const transactionFromWompi = await this.wompiService.getTransactionById(
+      dto.wompiTransactionId,
+    );
+
+    if (!transactionFromWompi) {
+      throw new Error('Transaction from Wompi not found');
+    }
+
+    const transaction = await this.transactionRepository.findOneBy({
+      wompiTransactionId: transactionFromWompi.id, 
+    });
+
+    if (!transaction) {
+      throw new Error('Local transaction not found');
+    }
+
+    await this.transactionRepository.update(transaction.id, {
+      status: transactionFromWompi.status,
+      updatedAt: new Date(),
+    });
   }
 }

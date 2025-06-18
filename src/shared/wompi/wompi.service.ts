@@ -1,17 +1,38 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { CreateCardDto } from 'src/modules/transactions/application/dto/create-card';
 import { generateWompiIntegrityHash } from 'src/utils/cripto.utils';
 
 @Injectable()
 export class WompiService {
-  
-  
-  async createCardToken(card: CreateCardDto): Promise<string> {
-    console.log(card);
-    const url = `${process.env.WOMPI_API_URL}/tokens/cards`;
+  private readonly logger = new Logger(WompiService.name);
+  private readonly baseUrl = process.env.WOMPI_API_URL;
+  private readonly publicKey = process.env.WOMPI_PUBLIC_KEY;
+  private readonly privateKey = process.env.WOMPI_PRIVATE_KEY;
+  private readonly integrationSecret = process.env.WOMPI_INTEGRATION_SECRET;
 
+  constructor(private readonly http: HttpService) {}
+
+  private validateEnvironment() {
+    if (!this.baseUrl || !this.publicKey || !this.privateKey || !this.integrationSecret) {
+      throw new Error('Faltan variables de entorno requeridas para Wompi');
+    }
+  }
+
+  private getAuthHeaders(usePrivateKey: boolean = false) {
+    return {
+      'Authorization': `Bearer ${usePrivateKey ? this.privateKey : this.publicKey}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  async createCardToken(card: CreateCardDto): Promise<string> {
+    this.validateEnvironment();
+    const url = `${this.baseUrl}/tokens/cards`;
+
+    this.logger.log(`Creando token de tarjeta para: ${card.card_holder}`);
+    
     const payload = {
       number: card.number,
       exp_month: card.exp_month,
@@ -20,25 +41,24 @@ export class WompiService {
       card_holder: card.card_holder,
     };
 
-    const headers = {
-      Authorization: `Bearer ${process.env.WOMPI_PUBLIC_KEY}`,
-      'Content-Type': 'application/json',
-    };
-
     try {
       const response = await firstValueFrom(
-        this.http.post(url, payload, { headers }),
+        this.http.post(url, payload, { 
+          headers: this.getAuthHeaders(false) 
+        })
       );
+
+      if (!response.data.data?.id) {
+        throw new Error('Respuesta de Wompi no contiene token de tarjeta');
+      }
 
       return response.data.data.id;
     } catch (error) {
-      console.error('Error creating card token', error);
-      throw error;
+      this.logger.error('Error creando token de tarjeta', error.response?.data || error.message);
+      throw this.parseWompiError(error);
     }
   }
 
-  constructor(private readonly http: HttpService) {}
-  
   async createTransaction({
     amountInCents,
     currency,
@@ -46,7 +66,7 @@ export class WompiService {
     cardToken,
     customerEmail,
     customerName,
-    installments,
+    installments = 1,
     acceptanceToken,
   }: {
     amountInCents: number;
@@ -56,9 +76,12 @@ export class WompiService {
     customerEmail: string;
     customerName: string;
     installments?: number;
-    acceptanceToken: any;
+    acceptanceToken: string;
   }): Promise<any> {
-    const url = `${process.env.WOMPI_API_URL}/transactions`;
+    this.validateEnvironment();
+    const url = `${this.baseUrl}/transactions`;
+
+    this.logger.log(`Creando transacción para ${customerEmail}, referencia: ${reference}`);
 
     const payload = {
       amount_in_cents: amountInCents,
@@ -66,35 +89,75 @@ export class WompiService {
       customer_email: customerEmail,
       customer_name: customerName,
       reference,
-      acceptance_token: String(acceptanceToken),
-      signature:generateWompiIntegrityHash(reference, amountInCents, currency, process.env.WOMPI_INTEGRATION_SECRET),
+      acceptance_token: acceptanceToken,
+      signature: generateWompiIntegrityHash(
+        reference, 
+        amountInCents, 
+        currency, 
+        this.integrationSecret
+      ),
       payment_method: {
         type: 'CARD',
         token: cardToken,
         installments,
       },
     };
-    console.log(payload);
+
     try {
       const response = await firstValueFrom(
         this.http.post(url, payload, {
-          headers: {
-            Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
-          },
-        }),
+          headers: this.getAuthHeaders(true),
+        })
       );
+
+      if (!response.data.data) {
+        throw new Error('Respuesta de Wompi no contiene datos de transacción');
+      }
 
       return response.data.data;
     } catch (error) {
-      const errorDetails = error.response?.data?.error?.messages;
-      console.error(
-        'Error detallado de Wompi:',
-        JSON.stringify(errorDetails, null, 2),
+      this.logger.error('Error creando transacción', error.response?.data || error.message);
+      throw this.parseWompiError(error);
+    }
+  }
+
+  async getTransactionById(wompiTransactionId: string): Promise<any> {
+    this.validateEnvironment();
+    const url = `${this.baseUrl}/transactions/${wompiTransactionId}`;
+
+    this.logger.log(`Consultando transacción: ${wompiTransactionId}`);
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get(url, {
+          headers: this.getAuthHeaders(true),
+        })
       );
 
-      throw new Error(
-        `Error en payment_method: ${JSON.stringify(errorDetails?.payment_method?.messages)}`,
-      );
+      if (!response.data.data) {
+        throw new Error('Respuesta de Wompi no contiene datos de transacción');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      this.logger.error('Error consultando transacción', error.response?.data || error.message);
+      throw this.parseWompiError(error);
     }
+  }
+
+  private parseWompiError(error: any): Error {
+    const wompiError = error.response?.data?.error;
+    
+    if (wompiError) {
+      let message = `Wompi Error [${wompiError.type}]: ${wompiError.reason}`;
+      
+      if (wompiError.messages) {
+        message += ` - Detalles: ${JSON.stringify(wompiError.messages)}`;
+      }
+      
+      return new Error(message);
+    }
+
+    return new Error(error.message || 'Error desconocido al comunicarse con Wompi');
   }
 }
