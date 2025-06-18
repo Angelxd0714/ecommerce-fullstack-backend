@@ -154,27 +154,7 @@ export class InfrastructureController {
   
   }
    
-  @Post('create-card-token')
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Token creado exitosamente' 
-  })
-  @ApiResponse({ 
-    status: 422, 
-    description: 'Error al crear el token (Wompi)' 
-  })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos de entrada inválidos' 
-  })
-  async createCardToken(@Body() dto: CreateCardDto): Promise<ResponseToken> {
-    try {
-      const token = await this.transactionService.createCardToken(dto);
-      return { token };
-    } catch (error) {
-     
-    }
-  }
+
   @Post('webhook')
   @ApiResponse({ 
     status: 200, 
