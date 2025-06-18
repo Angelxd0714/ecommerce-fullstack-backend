@@ -10,7 +10,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   database: process.env.AWS_DB_NAME,
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   autoLoadEntities: true,
-  synchronize: false, 
+  synchronize: true, 
   ssl: true,
   extra: {
     ssl: {
