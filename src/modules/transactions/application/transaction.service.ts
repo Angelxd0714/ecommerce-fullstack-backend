@@ -1,24 +1,19 @@
 import {
   Injectable,
   Inject,
-  NotFoundException,
   BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { TransactionRepositoryPort } from '../domain/ports/transaction.repository';
 import { Transaction } from '../domain/entities/transaction';
 import { TransactionServiceInterface } from '../domain/ports/transaction.service.interface';
-import { WompiService } from 'src/shared/wompi/wompi.service';
+import { WompiService } from '../../../shared/wompi/wompi.service';
 import { PayWithCardDto } from './dto/pay-with-card.dto';
-import { ProductService } from 'src/modules/products/application/product.service';
-import { DeliveryService } from 'src/modules/deliveries/application/delivery.service';
+import { DeliveryService } from '../../deliveries/application/delivery.service';
 import { v4 as uuid } from 'uuid';
-import { CostumerService } from 'src/modules/customers/application/costumer.service';
-import { CreateCardDto } from './dto/create-card';
 import { DataSource } from 'typeorm';
-import { Product } from 'src/modules/products/domain/entities/product.entity';
-import { Costumer } from 'src/modules/customers/domain/entities/costumers';
-import { Delivery } from 'src/modules/deliveries/domain/entities/delivery';
+import { Product } from '../../products/domain/entities/product.entity';
+import { Costumer } from '../../customers/domain/entities/costumers';
+import { Delivery } from '../../deliveries/domain/entities/delivery';
 import { WebHookDto } from './dto/webHook';
 
 @Injectable()

@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  Patch,
 } from '@nestjs/common';
 import { ResponseDelivery } from '../../application/dto/reponse-delivery';
 import { CreateDelivery } from '../../application/dto/create-delivery';
@@ -81,6 +82,7 @@ export class InfrastructureController {
       newDelivery.postalCode = delivery.postalCode;
       newDelivery.delivered = delivery.delivered;
       newDelivery.createdAt = new Date();
+      newDelivery.updatedAt = new Date();
       return this.deliveryService.create(newDelivery).then((delivery) => {
         return {
           id: delivery.id,
@@ -97,7 +99,7 @@ export class InfrastructureController {
       throw error;
     }
   }
-  @Put(':id')
+  @Patch(':id')
   @ApiResponse({
     status: 200,
     description: 'Entrega actualizada exitosamente',

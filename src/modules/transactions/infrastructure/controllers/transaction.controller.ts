@@ -1,12 +1,10 @@
-import { Controller, Post, Get, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, NotFoundException } from '@nestjs/common';
 import { TransactionService } from '../../application/transaction.service';
 
 import { CreateTransaction } from '../../application/dto/create-transaction';
 import { Transaction } from '../../domain/entities/transaction';
 import { ResponseTransaction } from '../../application/dto/response-transaction';
 import { PayWithCardDto } from '../../application/dto/pay-with-card.dto';
-import { CreateCardDto } from '../../application/dto/create-card';
-import { ResponseToken } from '../../application/dto/response-token';
 import { ApiResponse } from '@nestjs/swagger';
 import { WebHookDto } from '../../application/dto/webHook';
 import { ApiTags } from '@nestjs/swagger';
@@ -46,19 +44,22 @@ export class InfrastructureController {
         description: 'Transacciones no encontradas' 
       })  
     async findAll(): Promise<ResponseTransaction[]> {
-        const transactions = await this.transactionService.findAll();
-        return transactions.map(transaction => {
-            return {
-                transactionId: transaction.id,
-                amount: transaction.amount,
-                currency: transaction.currency,
-                createdAt: transaction.createdAt,
-                updatedAt: transaction.updatedAt,
-                customerId: transaction.customerId,
-                wompiTransactionId: transaction.wompiTransactionId,
-                reference: transaction.reference,
-            };
-        });
+      const transactions = await this.transactionService.findAll();
+      if (!transactions || transactions.length === 0) {
+        throw new NotFoundException('Transacciones no encontradas');
+      }
+      return transactions.map(transaction => {
+        return {
+          transactionId: transaction.id,
+          amount: transaction.amount,
+          currency: transaction.currency,
+          createdAt: transaction.createdAt,
+          updatedAt: transaction.updatedAt,
+          customerId: transaction.customerId,
+          wompiTransactionId: transaction.wompiTransactionId,
+          reference: transaction.reference,
+        };
+      });
     }
     @Get(':id')
     @ApiResponse({ 
@@ -71,13 +72,16 @@ export class InfrastructureController {
       })
     async findById(@Param('id') id: string): Promise<ResponseTransaction> {
         const transaction = await this.transactionService.findById(id);
+        if (!transaction) {
+          throw new NotFoundException('Transacción no encontrada');
+        }
         return {
             transactionId: transaction.id,
             amount: transaction.amount,
             currency: transaction.currency,
             createdAt: transaction.createdAt,
             updatedAt: transaction.updatedAt,
-            
+            reference: transaction.reference,
             customerId: transaction.customerId,
             wompiTransactionId: transaction.wompiTransactionId,
         };
@@ -105,7 +109,7 @@ export class InfrastructureController {
             currency: updatedTransaction.currency,
             createdAt: updatedTransaction.createdAt,
             updatedAt: updatedTransaction.updatedAt,
-          
+            reference: updatedTransaction.reference,
             customerId: updatedTransaction.customerId,
             wompiTransactionId: updatedTransaction.wompiTransactionId,
         };

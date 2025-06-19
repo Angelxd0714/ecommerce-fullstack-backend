@@ -1,6 +1,5 @@
-import { CreateCostumerDto } from "src/modules/customers/application/dto/create-costumer";
-import { CreateDelivery } from "src/modules/deliveries/application/dto/create-delivery";
-import {  IsNotEmpty } from "class-validator";
+import { CreateCostumerDto } from "../../../customers/application/dto/create-costumer";
+import { CreateDelivery } from "../../../deliveries/application/dto/create-delivery";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class PayWithCardDto {

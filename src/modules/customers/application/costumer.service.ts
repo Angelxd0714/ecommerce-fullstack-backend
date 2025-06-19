@@ -38,7 +38,7 @@ export class CostumerService implements CostumerServiceInterface {
     async update(id: number, costumer: Costumer): Promise<Costumer> {
         const updatedCostumer = await this.costumerRepository.findByIdentity(id);
         if (!updatedCostumer) {
-            throw new Error('Costumer not found');
+             throw new Error('Costumer not found');
         }
         updatedCostumer.name = costumer.name;
         updatedCostumer.email = costumer.email;

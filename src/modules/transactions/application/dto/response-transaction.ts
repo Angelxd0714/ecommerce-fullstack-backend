@@ -8,4 +8,5 @@ export class ResponseTransaction {
    
     customerId: string;
     wompiTransactionId: string;
+    reference: string;
 }

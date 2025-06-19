@@ -39,6 +39,9 @@ export class InfrastructureController {
   async findById(@Param('id') id: string): Promise<ProductResponseDto> {
     try {
       const product = await this.productService.findById(id);
+      if (!product) {
+        throw new Error('Product not found');
+      }
       return new ProductResponseDto(product);
     } catch (error) {
       throw error;

@@ -3,7 +3,7 @@ import { InfrastructureController } from './infrastructure/controllers/product.c
 import { ProductService } from './application/product.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './domain/entities/product.entity';
-import { AwsModule } from 'src/shared/aws/aws.module';
+import { AwsModule } from '../../shared/aws/aws.module';
 import { ProductRepositoryImpl } from './infrastructure/repository/product.repository.impl';
 
 @Module({

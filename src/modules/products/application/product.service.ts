@@ -10,17 +10,16 @@ export class ProductService implements ProductServiceInterface {
     private readonly productRepository: ProductRepositoryPort,
   ) {}
   async reduceStock(id: string[], quantity: number): Promise<void> {
-    id.forEach(async (id) => {
+    await Promise.all(id.map(async (id) => {
       const product = await this.findById(id);
       if (!product) {
         throw new Error('Product not found');
       }
       if (product.stock < quantity) {
-      throw new Error('Not enough stock');
-    }
-    product.stock -= quantity;
-    return this.productRepository.reduceStock(id, quantity);
-    });
+        throw new Error('Not enough stock');
+      }
+      await this.productRepository.reduceStock(id, quantity);
+    }));
   }
   async findAll(): Promise<Product[]> {
     const products = await this.productRepository.findAll();

@@ -14,6 +14,6 @@ export class CreateDelivery {
   @IsOptional()
   @IsBoolean()
   delivered?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

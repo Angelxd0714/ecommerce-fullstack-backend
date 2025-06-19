@@ -128,10 +128,13 @@ export class InfrastructureController {
     @Body() costumer: CreateCostumerDto,
   ): Promise<ResponseCostumerDto> {
     const costumerUpdated = new Costumer();
+    costumerUpdated.id = costumerUpdated.id;
+    costumerUpdated.identity = costumer.identity;
     costumerUpdated.name = costumer.name;
     costumerUpdated.email = costumer.email;
     costumerUpdated.phone = costumer.phone;
-    const updatedCostumer = await this.costumerService.update(identity, costumerUpdated);
+    const updatedCostumer = await this.costumerService.update(
+      identity, {...costumerUpdated});
     if (!updatedCostumer) {
       throw new BadRequestException('No costumer found');
     }

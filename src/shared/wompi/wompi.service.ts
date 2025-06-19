@@ -1,8 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { CreateCardDto } from 'src/modules/transactions/application/dto/create-card';
-import { generateWompiIntegrityHash } from 'src/utils/cripto.utils';
+import { generateWompiIntegrityHash } from '../../utils/cripto.utils';
 
 @Injectable()
 export class WompiService {
