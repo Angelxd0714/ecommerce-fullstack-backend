@@ -17,8 +17,12 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
-   app.enableCors({
-    origin: 'https://ecommerce-fullstack-frontend.vercel.app', 
+  app.enableCors({
+    origin: [
+      'https://ecommerce-fullstack-frontend.vercel.app',
+      /https:\/\/frontend-ecommerce-fullstack-.*\.vercel\.app/, // Regex para URLs de preview
+      'http://localhost:3000',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
