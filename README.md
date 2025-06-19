@@ -101,9 +101,10 @@ docker-compose up -d --build
 | **Cloudflare** | Gestiona el dominio personalizado, protección HTTPS y DNS.                  |
 | **GitHub Actions** | Automatización de despliegue continuo (CI/CD).                         |
 
-![alt text](image.png)
+
 ---
 
+![Diagrama de arquitectura del proyecto](image.png)
 
 ## 🧪 Swagger para documentación
 
