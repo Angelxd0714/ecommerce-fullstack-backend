@@ -20,8 +20,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://ecommerce-fullstack-frontend.vercel.app',
-      /https:\/\/frontend-ecommerce-fullstack-.*\.vercel\.app/, // Regex para URLs de preview
-      'http://localhost:3000',
+      'http://localhost:5173',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
