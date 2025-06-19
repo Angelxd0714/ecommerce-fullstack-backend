@@ -111,4 +111,4 @@ docker-compose up -d --build
 La API cuenta con documentación automática generada con Swagger, accesible en:
 
 ```
-http://localhost:3000/api
+
